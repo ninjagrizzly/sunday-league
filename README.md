@@ -41,3 +41,23 @@ cp .env.example .env
 ```
 poetry run python main.py
 ```
+
+
+### Docker Deployment
+
+## Environment Variables
+
+See `.env.example` for all available configuration options.
+
+## Development
+Install dev dependencies
+poetry install --with dev
+
+Run tests
+`poetry run pytest`
+
+Format code
+`poetry run black .`
+
+Type checking
+`poetry run mypy .`

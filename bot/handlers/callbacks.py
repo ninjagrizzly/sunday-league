@@ -145,7 +145,7 @@ async def handle_advance_round(query, context: ContextTypes.DEFAULT_TYPE) -> Non
 
 async def handle_finish_tournament(query, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle finish tournament button"""
-    from football_bot.handlers.matches import finish_tournament_command
+    from bot.handlers.matches import finish_tournament_command
     await finish_tournament_command(query, context)
 
 

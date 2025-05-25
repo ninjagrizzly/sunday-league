@@ -1,5 +1,5 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Optional
 
 
 class Keyboards:
@@ -57,9 +57,9 @@ class Keyboards:
         return InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="cancel")]])
     
     @staticmethod
-    def match_results(matches: List[Tuple[str, str]], round_num: int, match_results: Dict) -> InlineKeyboardMarkup:
+    def match_results(matches: List[Tuple[str, str]], round_num: int, match_results: Dict, additional_buttons: Optional[List[Dict]] = []) -> InlineKeyboardMarkup:
         """Create match results keyboard"""
-        keyboard = []
+        keyboard = [] + additional_buttons
         
         for i, (home, away) in enumerate(matches):
             match_id = f"R{round_num}_{home}_vs_{away}".replace(" ", "_")

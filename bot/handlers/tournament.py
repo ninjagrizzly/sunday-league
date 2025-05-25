@@ -60,7 +60,7 @@ async def handle_next_round(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 
 async def handle_finish_tournament(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle tournament finishing"""
-    from football_bot.handlers.matches import finish_tournament_command
+    from bot.handlers.matches import finish_tournament_command
     await finish_tournament_command(update, context)
 
 

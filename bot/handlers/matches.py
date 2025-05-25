@@ -146,21 +146,21 @@ async def enter_results(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         return
     
     matches = tournament.rounds[current_round]['matches']
-    reply_markup = Keyboards.match_results(matches, current_round, tournament.match_results)
     
     # Add Finish Round button if all matches are completed
     round_complete = tournament.is_round_complete(current_round)
     round_marked_complete = tournament.rounds[current_round]['completed']
     
     status_text = ""
+    additional_buttons = []
     if round_complete and not round_marked_complete:
         status_text = "\n\n✅ **All matches completed! You can now finish this round.**"
         # Add finish round button to keyboard
-        keyboard = reply_markup.inline_keyboard
-        keyboard.append([{"text": "🏁 Finish Round", "callback_data": f"finish_round_{current_round}"}])
-        reply_markup.inline_keyboard = keyboard
+        additional_buttons.append([{"text": "🏁 Finish Round", "callback_data": f"finish_round_{current_round}"}])
     elif round_marked_complete:
         status_text = "\n\n🎯 **Round completed and finished!**"
+
+    reply_markup = Keyboards.match_results(matches, current_round, tournament.match_results, additional_buttons)
     
     await update.message.reply_text(
         f"🏆 **Enter Results - Round {current_round}**\n\nSelect a match to enter/edit the result:{status_text}",
@@ -182,7 +182,7 @@ async def finish_tournament_command(update: Update, context: ContextTypes.DEFAUL
     progress = tournament.get_tournament_progress()
     
     if progress['completed_matches'] < progress['total_matches']:
-        from football_bot.utils.keyboards import Keyboards
+        from bot.utils.keyboards import Keyboards
         keyboard = [
             [{"text": "✅ Yes, Finish Now", "callback_data": "force_finish"}],
             [{"text": "❌ No, Continue", "callback_data": "cancel"}]
