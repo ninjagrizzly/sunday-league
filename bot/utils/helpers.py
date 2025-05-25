@@ -26,8 +26,14 @@ def calculate_team_statistics(teams: List[str], match_results: Dict[str, Dict]) 
         try:
             # Parse match_id to extract teams: "R1_TeamA_vs_TeamB"
             parts = match_id.split('_')
+            if len(parts) < 4:
+                continue
+                
             home_team = parts[1]
             away_team = parts[3]
+            
+            if home_team not in teams_stats or away_team not in teams_stats:
+                continue
             
             home_score = result['home_score']
             away_score = result['away_score']
@@ -56,7 +62,7 @@ def calculate_team_statistics(teams: List[str], match_results: Dict[str, Dict]) 
                 teams_stats[away_team]['points'] += 1
                 teams_stats[home_team]['drawn'] += 1
                 teams_stats[away_team]['drawn'] += 1
-        except (KeyError, IndexError) as e:
+        except (KeyError, IndexError, ValueError) as e:
             logger.error(f"Error processing match {match_id}: {e}")
     
     # Calculate goal difference
@@ -68,7 +74,7 @@ def calculate_team_statistics(teams: List[str], match_results: Dict[str, Dict]) 
     return teams_stats
 
 
-def format_tournament_table(teams_stats: Dict) -> str:
+def format_tournament_table(teams_stats: Dict) -> Tuple[str, List]:
     """Format tournament table as string"""
     # Sort teams by points (descending), then by goal difference, then by goals for
     sorted_teams = sorted(
@@ -90,3 +96,49 @@ def format_tournament_table(teams_stats: Dict) -> str:
     table_text += "```\n"
     
     return table_text, sorted_teams
+
+
+def format_detailed_stats(teams_stats: Dict, tournament_rounds: Dict) -> str:
+    """Format detailed tournament statistics"""
+    stats_text = "📊 **Detailed Tournament Statistics**\n\n"
+    
+    # Top scorers (by goals for)
+    top_scorers = sorted(teams_stats.items(), key=lambda x: x[1]['goals_for'], reverse=True)
+    stats_text += "⚽ **Top Scoring Teams:**\n"
+    for i, (team, stats) in enumerate(top_scorers[:5], 1):
+        stats_text += f"{i}. {team}: {stats['goals_for']} goals\n"
+    
+    # Best defense (by goals against)
+    best_defense = sorted(teams_stats.items(), key=lambda x: x[1]['goals_against'])
+    stats_text += "\n🛡️ **Best Defensive Teams:**\n"
+    for i, (team, stats) in enumerate(best_defense[:5], 1):
+        stats_text += f"{i}. {team}: {stats['goals_against']} goals conceded\n"
+    
+    # Most wins
+    most_wins = sorted(teams_stats.items(), key=lambda x: x[1]['won'], reverse=True)
+    stats_text += "\n🏆 **Most Wins:**\n"
+    for i, (team, stats) in enumerate(most_wins[:5], 1):
+        stats_text += f"{i}. {team}: {stats['won']} wins\n"
+    
+    # Calculate total goals and matches
+    total_goals = sum(stats['goals_for'] for stats in teams_stats.values()) // 2
+    total_matches = sum(stats['played'] for stats in teams_stats.values()) // 2
+    
+    stats_text += f"\n📈 **Tournament Overview:**\n"
+    stats_text += f"Total Matches Played: {total_matches}\n"
+    stats_text += f"Total Goals Scored: {total_goals}\n"
+    if total_matches > 0:
+        stats_text += f"Average Goals per Match: {total_goals/total_matches:.2f}\n"
+    
+    # Round-by-round breakdown
+    stats_text += f"\n📅 **Round Breakdown:**\n"
+    total_rounds = len(tournament_rounds)
+    for round_num in range(1, total_rounds + 1):
+        if round_num in tournament_rounds:
+            status = "✅ Complete" if tournament_rounds[round_num]['completed'] else "⏳ In Progress"
+            matches_in_round = len(tournament_rounds[round_num]['matches'])
+            completed_in_round = sum(1 for home, away in tournament_rounds[round_num]['matches'] 
+                                   if f"R{round_num}_{home}_vs_{away}".replace(" ", "_") in tournament_rounds)
+            stats_text += f"Round {round_num}: {completed_in_round}/{matches_in_round} matches - {status}\n"
+    
+    return stats_text

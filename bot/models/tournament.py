@@ -179,3 +179,7 @@ class FootballTournament:
                 logger.info("Tournament data loaded successfully")
         except Exception as e:
             logger.error(f"Failed to load tournament data: {e}")
+
+
+# Global tournament instance
+tournament = FootballTournament()
